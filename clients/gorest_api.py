@@ -8,7 +8,7 @@ objectifs cas d'usage:
 
 1/ une requête GET pour récupérer une page d'utilisateurs paramétrable (nombre de résultats, page)
 2/ utiliser la méthode précédente pour récupérer tous les utilisateurs (itérateur)
-3/ améliorer la méthide précédente pour accélérer la récupération avec du multithreading
+3/ améliorer la méthode précédente pour accélérer la récupération avec du multithreading
 4/ une requête POST pour créer un utilisateur avec authentification de type bearer token
 
 objectifs techniques:
@@ -76,6 +76,9 @@ class GoRestClient:
       "GET", 
       params={"page": page, "per_page": self.__per_page}
     )
+  
+  def get_all_users(self, limit=10):
+    pass
 
   def __call(self, endpoint: str, method: str, 
              params: Dict= {}, 
