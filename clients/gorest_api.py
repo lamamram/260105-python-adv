@@ -59,3 +59,102 @@ except (ConnectionError, RequestException) as e:
 # 2/ gérer les paramètres d'instanciation du client dans le __init__
 # 3/ créer une méthode publique get_users_page pour insérer les paramétres et retourner la réponse
 # 4/ créer une méthode privée __call qui manipule requests
+import requests
+from requests.exceptions import ConnectionError, HTTPError, Timeout, RequestException
+
+from typing import List, Dict
+
+class GoRestClient:
+  def __init__(self, version: str= "v2", **conf):
+    self.__base = "https://gorest.co.in/public/"
+    self.__version = version
+    self.__per_page = conf.get("per_page", 10)
+  
+  def get_users_page(self, page: int) -> List[Dict] | Dict:
+    return self.__call(
+      "users", 
+      "GET", 
+      params={"page": page, "per_page": self.__per_page}
+    )
+
+  def __call(self, endpoint: str, method: str, 
+             params: Dict= {}, 
+             data: Dict={}, 
+             headers: Dict={},
+             files={}) -> List[Dict] | Dict:
+    """
+    exécuter toutes les requêtes http du client
+    """
+    try:
+      call_fn = getattr(requests, method.lower())
+      response = call_fn(
+        f"{self.__base}/{self.__version}/{endpoint}",
+        params=params,
+        data=data,
+        headers=headers,
+        files=files
+      )
+      if 200 <= response.status_code < 300:
+        if "Content-Type" in response.headers and "application/json" in response.headers["Content-Type"]:
+          return response.json()
+      else:
+        response.raise_for_status()
+    except (ConnectionError, RequestException) as e:
+      return {type(e): str(e)}
+
+# %%
+# programme principal
+
+client = GoRestClient()
+client.get_users_page(2)
+
+
+# %%
+## RAPPEL: gestion dynamique des attributs des objets
+class T:
+  pass
+
+t = T()
+
+setattr(t, "param", "value")
+# print(t.param)
+hasattr(t, "param"), getattr(t, "param")
+
+# %%
+# rappels sur les dictionnaires
+
+d = {"k1": 1, "k2": 2}
+third_value = None
+# if "k3" in d:
+#   third_value = d["k3"]
+# else:
+#   third_value = 33
+d.get("k3", 33)
+
+
+# %%
+# rappels sur les paramètres "variadics" *args **kwargs
+
+def func (p1, *params):
+  print(p1, params)
+
+func(10)
+func(10, "bonjour", "tout", "le monde")
+
+def kw_func(p1, **opts):
+  print(p1, opts)
+
+kw_func(10)
+kw_func(10, k1=2, k2="machin")
+# %%
+
+# utilisation des variadics à l'appel
+
+def func(p1, p2, p3):
+  print(p1, p2, p3)
+
+params = {"p1": 1, "p3": 3, "p2": 2}
+
+func(**params)
+
+# %%
