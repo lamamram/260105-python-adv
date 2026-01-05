@@ -21,3 +21,13 @@ objectifs techniques:
   méthode privée centrale qui manipule requests (gestion du verbe HTTP, des headers, des paramètres, du corps de la requête, etc.)
 Bonus: travailler avec une session requests pour optimiser les appels répétés au cas où
 """
+
+# %%
+## utilisation de requests sans POO
+## cherche une page d'utilisateurs par nombre de résultats et numéro de page
+## sans POO
+## gestion des erreurs HTTP et des exceptions réseau et status code et header Content-Type et gestion du JSON
+
+import requests
+
+
