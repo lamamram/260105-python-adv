@@ -59,7 +59,7 @@ except (ConnectionError, RequestException) as e:
 # 2/ gérer les paramètres d'instanciation du client dans le __init__
 # 3/ créer une méthode publique get_users_page pour insérer les paramétres et retourner la réponse
 # 4/ créer une méthode privée __call qui manipule requests
-import requests
+import requests, os
 from requests.exceptions import ConnectionError, HTTPError, Timeout, RequestException
 from concurrent.futures import ThreadPoolExecutor as TPE
 from multiprocessing import cpu_count
@@ -67,6 +67,13 @@ from multiprocessing import cpu_count
 from typing import List, Dict
 
 from abc import ABC, abstractmethod
+# pip install python_dotenv
+from dotenv import load_dotenv
+
+# charge les variables du .env local en tant que variables d'environnment temporaires
+load_dotenv()
+
+TOKEN = os.environ["GO_REST_TOKEN"]
 
 # classe abstraite qui fait office d'interface sur le sujet API user
 class UserAPIClient(ABC):
@@ -76,12 +83,14 @@ class UserAPIClient(ABC):
   def get_all_users(self, limit=10) -> dict: pass
   @abstractmethod
   def get_all_users_multi(self) -> dict: pass
-
+  @abstractmethod
+  def create_user(self, user_data: dict) -> dict: pass
 class GoRestClient(UserAPIClient):
   def __init__(self, version: str= "v2", **conf):
     self.__base = "https://gorest.co.in/public/"
     self.__version = version
     self.__per_page = conf.get("per_page", 10)
+    self.__token = TOKEN
   
   def get_users_page(self, page: int) -> List[Dict] | Dict:
     return self.__call(
@@ -122,7 +131,8 @@ class GoRestClient(UserAPIClient):
             data += r
         i += 1
     
-    
+  def create_user(self, user_data: dict) -> dict:
+    return self.__call("users", "POST", data=user_data)
 
   def __call(self, endpoint: str, method: str, 
              params: Dict= {}, 
@@ -133,6 +143,8 @@ class GoRestClient(UserAPIClient):
     exécuter toutes les requêtes http du client
     """
     try:
+      if method.lower() in ("post", "put", "patch", "delete"):
+        headers["Authorization"] = f"Bearer {self.__token}"
       call_fn = getattr(requests, method.lower())
       response = call_fn(
         f"{self.__base}/{self.__version}/{endpoint}",
@@ -151,13 +163,19 @@ class GoRestClient(UserAPIClient):
 
 # %%
 # programme principal
-from clients.decorators import timer
+from decorators import timer
 
 @timer
 def main(client: UserAPIClient):
   # client.get_users_page(2)
   # client.get_all_users()
-  print(list(map(len, client.get_all_users_multi().values())))
+  # print(list(map(len, client.get_all_users_multi().values())))
+  print(client.create_user({
+    "name": "matt LAMAM",
+    "email": "bob@example.com",
+    "gender": "male",
+    "status": "active"
+  }))
   
 
 if __name__ == "__main__":
