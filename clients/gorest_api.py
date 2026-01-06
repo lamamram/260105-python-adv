@@ -74,6 +74,8 @@ class UserAPIClient(ABC):
   def get_users_page(self, page: int) -> List[Dict] | Dict: pass
   @abstractmethod
   def get_all_users(self, limit=10) -> dict: pass
+  @abstractmethod
+  def get_all_users_multi(self) -> dict: pass
 
 class GoRestClient(UserAPIClient):
   def __init__(self, version: str= "v2", **conf):
@@ -152,13 +154,14 @@ class GoRestClient(UserAPIClient):
 from clients.decorators import timer
 
 @timer
-def main():
-  client = GoRestClient(per_page=20)
+def main(client: UserAPIClient):
   # client.get_users_page(2)
   # client.get_all_users()
   print(list(map(len, client.get_all_users_multi().values())))
   
 
 if __name__ == "__main__":
-  main()
+  # configuration du bon client (ajouter une factory)
+  client = GoRestClient(per_page=20)
+  main(client)
 # %%
