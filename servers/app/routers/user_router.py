@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-user_router = APIRouter()
+user_router = APIRouter(prefix="/users")
 
 USERS = [
     {
@@ -75,3 +75,7 @@ USERS = [
     }
 ]
 
+@user_router.get("/{user_id}", status_code=200)
+def fetch_user(*, user_id: int) -> dict:
+  result = [user for user in USERS if user["id"] == user_id]
+  if result: return result[0]

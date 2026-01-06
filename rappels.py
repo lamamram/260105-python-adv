@@ -47,6 +47,23 @@ params = {"p1": 1, "p3": 3, "p2": 2}
 func(**params)
 
 # %%
+## signatures remarquables
+
+def my_func(p1, /, p2, opt="dft1", *, opt2="dft2", **conf):
+  print(p1, p2, opt, opt2)
+
+
+my_func(1, 2)
+# appel nommé impossible avec p1 car à gauche de /
+# my_func(p2=2, p1=1)
+my_func(1, opt="truc", p2=2)
+my_func(1, 2, "truc")
+# appel positionnel impossible avec opt2 à droite de *
+# my_func(1, 2, "truc", "machin")
+my_func(1, 2, "truc", opt2="machin")
+
+
+# %%
 ## "polymorphisme naturel"
 
 
