@@ -47,3 +47,23 @@ params = {"p1": 1, "p3": 3, "p2": 2}
 func(**params)
 
 # %%
+## "polymorphisme naturel"
+
+
+def troisfois(x: int) -> int:
+  '''
+  Docstring for troisfois
+  
+  :param x: Description
+  :type x: int
+  :return: Description
+  :rtype: int
+  '''
+  if not isinstance(x, int):
+    raise ValueError(f"{x} not int")
+  return 3 * x
+
+troisfois(3)
+# troisfois("rien")
+troisfois.__annotations__, troisfois.__doc__
+# %%

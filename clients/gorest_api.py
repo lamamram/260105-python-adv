@@ -78,7 +78,17 @@ class GoRestClient:
     )
   
   def get_all_users(self, limit=10):
-    pass
+    data, errors, page = [], [], 1
+    while True:
+      r = self.get_users_page(page)
+      if not r or page > limit:
+        return {"data": data, "errors": errors}
+      if isinstance(r, dict):
+        errors.append(r)
+      else:
+        data += r
+      page += 1
+    
 
   def __call(self, endpoint: str, method: str, 
              params: Dict= {}, 
@@ -109,4 +119,7 @@ class GoRestClient:
 # programme principal
 
 client = GoRestClient()
-client.get_users_page(2)
+# client.get_users_page(2)
+client.get_all_users()
+
+# %%
