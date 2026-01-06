@@ -65,9 +65,17 @@ from concurrent.futures import ThreadPoolExecutor as TPE
 from multiprocessing import cpu_count
 
 from typing import List, Dict
-from time import time
 
-class GoRestClient:
+from abc import ABC, abstractmethod
+
+# classe abstraite qui fait office d'interface sur le sujet API user
+class UserAPIClient(ABC):
+  @abstractmethod
+  def get_users_page(self, page: int) -> List[Dict] | Dict: pass
+  @abstractmethod
+  def get_all_users(self, limit=10) -> dict: pass
+
+class GoRestClient(UserAPIClient):
   def __init__(self, version: str= "v2", **conf):
     self.__base = "https://gorest.co.in/public/"
     self.__version = version
@@ -141,7 +149,7 @@ class GoRestClient:
 
 # %%
 # programme principal
-from decorators import timer
+from clients.decorators import timer
 
 @timer
 def main():
