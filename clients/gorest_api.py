@@ -88,6 +88,13 @@ class GoRestClient:
       else:
         data += r
       page += 1
+  
+  def get_all_users_multi(self):
+    """
+    ajouter la classe ThreadPoolExecutor pour accélérer le téléchargement
+    des objets utilisateurs par batch de pages
+    """
+    pass
     
 
   def __call(self, endpoint: str, method: str, 
