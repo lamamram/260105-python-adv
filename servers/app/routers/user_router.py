@@ -1,4 +1,13 @@
-from fastapi import APIRouter
+"""
+ensemble de routes concerant les ressources utilisateurs
+attention: les routes sont détectées par des regex
+par défaut écrivez les routes dans l'ordre des plus singuliers vers les plus générique
+"""
+from fastapi import APIRouter, Query
+
+# type de donées avec un objet de type donné OU None
+from typing import Optional
+from .user_schemas import *
 
 user_router = APIRouter(prefix="/users")
 
@@ -75,7 +84,28 @@ USERS = [
     }
 ]
 
-@user_router.get("/{user_id}", status_code=200)
+@user_router.get("/search", status_code=200, response_model=UserSearchResults)
+def search_users(*, 
+      keyword: Optional[str]=Query(None, min_length=3, openapi_examples={
+        "name_exemple": {
+          "summary": "matt LAMAM",
+          "value": "matt"
+        }
+      }),
+      max_results: Optional[int]=10) -> dict:
+  """
+  utilisation de la querystring
+  utilisation des méta types optional qui autorise la valeur None
+  """
+  if not keyword:
+    return {"results": USERS[:max_results]}
+  results = filter(lambda user: keyword.lower() in user["name"].lower(), USERS)
+  return {"results": list(results)[:max_results]}
+
+@user_router.get("/{user_id}", status_code=200, response_model=User)
 def fetch_user(*, user_id: int) -> dict:
+  """
+  ajout d'un paramètre d'url
+  """
   result = [user for user in USERS if user["id"] == user_id]
   if result: return result[0]
