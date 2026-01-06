@@ -169,13 +169,13 @@ from decorators import timer
 def main(client: UserAPIClient):
   # client.get_users_page(2)
   # client.get_all_users()
-  # print(list(map(len, client.get_all_users_multi().values())))
-  print(client.create_user({
-    "name": "matt LAMAM",
-    "email": "bob@example.com",
-    "gender": "male",
-    "status": "active"
-  }))
+  print(list(map(len, client.get_all_users_multi().values())))
+  # print(client.create_user({
+  #   "name": "matt LAMAM",
+  #   "email": "bob@example.com",
+  #   "gender": "male",
+  #   "status": "active"
+  # }))
   
 
 if __name__ == "__main__":
@@ -183,3 +183,32 @@ if __name__ == "__main__":
   client = GoRestClient(per_page=20)
   main(client)
 # %%
+
+### version de requests avec session pour gestion de cookie
+
+class GoRestApi:
+    def __init__(self) -> None:
+        self.__url = "https://gorest.co.in/public"
+        self.__version = "v2"
+        self.__session = requests.Session()
+        self.__token = "__token__"
+    
+    def __call(self, 
+        method, 
+        endpoint, 
+        querystring="", 
+        data={}, headers={}, files={}):
+        location = f"{self.__url}/{self.__version}/{endpoint}{querystring}"
+        try:
+            if method in ('POST', 'PUT', 'DELETE'):
+                headers["Authorization"] = f"Bearer {self.__token}"
+            r = self.__session.send(requests.Request(
+                method.lower(),
+                url= location, headers=headers, files=files, data=data).prepare())
+            if r.status_code in (200, 201):
+                if "application/json" in r.headers["content-type"]:
+                    return {"valid": True, "response": r.json()}
+                return r.text
+            raise ValueError(f"wrong status: {r.status_code}")
+        except (requests.HTTPError, requests.ConnectionError, ValueError) as e:
+            return {"valid": False, "response": {"type": type(e), "msg": e}}
