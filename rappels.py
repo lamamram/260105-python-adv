@@ -67,3 +67,22 @@ troisfois(3)
 # troisfois("rien")
 troisfois.__annotations__, troisfois.__doc__
 # %%
+## exemple de pool de thread python
+
+from concurrent.futures import ThreadPoolExecutor as TPE
+from multiprocessing import cpu_count
+import requests
+
+## pool de threads: pool de connexions => mutualisation de connexions
+## un pool çà s'ouvre et çà se ferme
+
+def worker(param):
+  return requests.get("https://www.dawan.fr/formations/python/python-debutants/" + param).status_code
+
+with TPE(cpu_count() - 2,) as pool:
+  # faire des appels individuels asynchrone => pool.submit
+  # exécuter une fonction sur une grappe d'appels, avec paramètres différents => pool.map
+  # map est synchrone => tous les appels doivent être terminés pour avancer dans le programme
+  responses = pool.map(worker, ["python-initiation", "python-approfondissement"])
+  print(list(responses))
+# %%
