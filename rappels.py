@@ -83,6 +83,36 @@ with TPE(cpu_count() - 2,) as pool:
   # faire des appels individuels asynchrone => pool.submit
   # exécuter une fonction sur une grappe d'appels, avec paramètres différents => pool.map
   # map est synchrone => tous les appels doivent être terminés pour avancer dans le programme
-  responses = pool.map(worker, ["python-initiation", "python-approfondissement"])
-  print(list(responses))
+  for response in pool.map(worker, ["python-initiation", "python-approfondissement"]):
+    print(response)
+  # print(list(responses))
+  
+# %%
+## rappel sur la programmation fonctionnelle
+
+def my_map(func, lst: list) -> list:
+  for i in range(len(lst)):
+    lst[i] = func(lst[i])
+  return lst
+
+def square(x: int) -> int:
+  return x**2
+
+my_map(square, [1, 3, 5])
+
+# avec le véritable map => cablé en C !! plus rapide qu'un for    
+list(map(square, [1, 3, 5]))
+# %%
+## rappel sur les fonctions lambdas
+list(map(lambda x: x**2, [1, 3, 5]))
+
+
+# %%
+## exemple tri complexe
+import random
+
+rows = [ f"row_{i}" for i in range(1, 21) ]
+random.shuffle(rows)
+sorted(rows, key=lambda r: int(r[4:]))
+
 # %%

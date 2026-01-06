@@ -61,8 +61,11 @@ except (ConnectionError, RequestException) as e:
 # 4/ créer une méthode privée __call qui manipule requests
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout, RequestException
+from concurrent.futures import ThreadPoolExecutor as TPE
+from multiprocessing import cpu_count
 
 from typing import List, Dict
+from time import time
 
 class GoRestClient:
   def __init__(self, version: str= "v2", **conf):
@@ -77,7 +80,7 @@ class GoRestClient:
       params={"page": page, "per_page": self.__per_page}
     )
   
-  def get_all_users(self, limit=10):
+  def get_all_users(self, limit=10) -> dict:
     data, errors, page = [], [], 1
     while True:
       r = self.get_users_page(page)
@@ -89,12 +92,26 @@ class GoRestClient:
         data += r
       page += 1
   
-  def get_all_users_multi(self):
+  def get_all_users_multi(self) -> dict:
     """
     ajouter la classe ThreadPoolExecutor pour accélérer le téléchargement
     des objets utilisateurs par batch de pages
     """
-    pass
+    data, errors, i = [], [], 0
+    nb_cpus = cpu_count() - 2
+    with TPE(nb_cpus) as pool:
+      while True:
+        print(f"fetch pages {nb_cpus*i + 1} to {nb_cpus*(i+1) + 1} !")
+        for r in pool.map(self.get_users_page, list(range(nb_cpus*i + 1, nb_cpus*(i+1) + 1))):
+          # map liste les appels DANS l'ORDRE
+          if not r:
+            return {"data": data, "errors": errors}
+          if isinstance(r, dict):
+            errors.append(r)
+          else:
+            data += r
+        i += 1
+    
     
 
   def __call(self, endpoint: str, method: str, 
@@ -124,9 +141,16 @@ class GoRestClient:
 
 # %%
 # programme principal
+from decorators import timer
 
-client = GoRestClient()
-# client.get_users_page(2)
-client.get_all_users()
+@timer
+def main():
+  client = GoRestClient(per_page=20)
+  # client.get_users_page(2)
+  # client.get_all_users()
+  print(list(map(len, client.get_all_users_multi().values())))
+  
 
+if __name__ == "__main__":
+  main()
 # %%
