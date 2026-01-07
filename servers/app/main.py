@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from .middlewares import RedirectSlashMiddleware
 
 # import direct à partir d'un package routers grâce à son __init__.py
-from .routers import user_router
+from .routers import *
 
 # debug = True => affiche les prints dans le terminal
 app = FastAPI(title="User API", debug=True)
@@ -20,3 +20,4 @@ def root() -> dict:
   return {"msg": "Hello World"}
 
 app.include_router(user_router)
+app.include_router(auth_router)

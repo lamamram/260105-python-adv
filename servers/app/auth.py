@@ -15,10 +15,11 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 SECRET_KEY=os.environ["SECRET_KEY"]
-ACCESS_TOKEN_EXPIRE_MINUTE=os.environ["ACCESS_TOKEN_EXPIRE_MINUTE"]
+ACCESS_TOKEN_EXPIRE_MINUTE=os.environ["ACCESS_TOKEN_EXPIRE_MINUTE"] or 30
 ALGORITHM=os.environ["ALGORITHM"]
 
 if not SECRET_KEY: raise ValueError("SECRET_KEY inexistante !!!!")
+ACCESS_TOKEN_EXPIRE_MINUTE = int(ACCESS_TOKEN_EXPIRE_MINUTE)
 
 def create_access_token(payload: dict, expires_delta: Optional[timedelta]) -> str:
   # copie pour agrémenter le jeton

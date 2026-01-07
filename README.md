@@ -58,3 +58,11 @@
 ### principe du jeton JWT
 
 ![alt text](jwt.png)
+
+### stratégie
+
+1. création du jeton `auth.create_access_token`
+2. création du router `auth_router`
+  + ajouter la route `/login`
+3. vérification du jeton: `auth.verify_token`
+  + un test du token avec la route `/me`
