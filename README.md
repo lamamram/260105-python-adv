@@ -51,3 +51,10 @@
 <ins>6. archi µservices classiques</ins>
 
 ![alt text](µservices.png)
+
+## authentification Oauth2 avec un jeton JWT: Json Web Token
+
+
+### principe du jeton JWT
+
+![alt text](jwt.png)
