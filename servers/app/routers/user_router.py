@@ -3,13 +3,14 @@ ensemble de routes concerant les ressources utilisateurs
 attention: les routes sont détectées par des regex
 par défaut écrivez les routes dans l'ordre des plus singuliers vers les plus générique
 """
-from fastapi import APIRouter, Query, HTTPException, status, Request 
+from fastapi import APIRouter, Query, HTTPException, status, Request, Depends
 from fastapi.templating import Jinja2Templates
 
 # type de donées avec un objet de type donné OU None
 from typing import Optional
 from .user_schemas import *
 from pathlib import Path
+from ..auth import verify_token
 
 user_router = APIRouter(prefix="/users")
 
@@ -133,8 +134,9 @@ def fetch_user(*, user_id: int) -> dict:
 
 ### call post pour créer un utilisateur ( pas de persitance )
 ### déterminer le schéma d'entrée et de sortie et le status code qui veut dire (OK: crée)
+# TODO: ajouter l'authentification sur cette route
 @user_router.post("/create", status_code=201, response_model=User)
-def create_user(*, new_user: PostUser) -> dict:
+def create_user(*, new_user: PostUser, auth_user: dict=Depends(verify_token)) -> dict:
   new_id = max(USERS, key=lambda obj: obj["id"])['id'] + 1
   user_in = User(
     id=new_id,
