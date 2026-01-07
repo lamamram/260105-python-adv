@@ -19,7 +19,8 @@ class RedirectSlashMiddleware(BaseHTTPMiddleware):
 # import direct à partir d'un package routers grâce à son __init__.py
 from .routers import user_router
 
-app = FastAPI(title="User API")
+# debug = True => affiche les prints dans le terminal
+app = FastAPI(title="User API", debug=True)
 
 # Ajouter le middleware AVANT d'inclure les routers
 app.add_middleware(RedirectSlashMiddleware)

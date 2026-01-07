@@ -112,3 +112,16 @@ def fetch_user(*, user_id: int) -> dict:
 
 ### call post pour créer un utilisateur ( pas de persitance )
 ### déterminer le schéma d'entrée et de sortie et le status code qui veut dire (OK: crée)
+@user_router.post("/create", status_code=201, response_model=User)
+def create_user(*, new_user: PostUser) -> dict:
+  new_id = max(USERS, key=lambda obj: obj["id"])['id'] + 1
+  user_in = User(
+    id=new_id,
+    name=new_user.name,
+    email=new_user.email,
+    gender=new_user.gender,
+    status=new_user.status
+  )
+  # en mémoire donc volatile
+  USERS.append(dict(user_in))
+  return user_in
