@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Query, HTTPException, status
+from fastapi import APIRouter, Query, HTTPException, status, Depends
 
 from typing import Optional
 from .auth_schemas import *
-from ..auth import ACCESS_TOKEN_EXPIRE_MINUTE, create_access_token
+from ..auth import ACCESS_TOKEN_EXPIRE_MINUTE, create_access_token, verify_token
 from datetime import timedelta
 
 auth_router = APIRouter(prefix="/auth")
@@ -36,6 +36,7 @@ def login(*, credentials: LoginRequest) -> dict:
     )
   
   # on peut ajouter les permissions dans le payload à partir de la BDD
+  ## "sub" est un champs attendu en JWT comme sujet => indentifiant
   token = create_access_token({
       "sub": user["user_id"],
       "username": user["username"],
@@ -51,6 +52,14 @@ def login(*, credentials: LoginRequest) -> dict:
     ## en secondes
     "expires_in": ACCESS_TOKEN_EXPIRE_MINUTE * 60
   }
+
+
+@auth_router.get("/me", status_code=200)
+def get_current_user(user: dict=Depends(verify_token)) -> dict:
+  """
+  la classe Depends demande à fastAPI d'exécuter un callable (fonction ou classe) dans le contexte
+  """
+  return {"user": user}
 
 
 
