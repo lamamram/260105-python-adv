@@ -109,3 +109,6 @@ def fetch_user(*, user_id: int) -> dict:
   """
   result = [user for user in USERS if user["id"] == user_id]
   if result: return result[0]
+
+### call post pour créer un utilisateur ( pas de persitance )
+### déterminer le schéma d'entrée et de sortie et le status code qui veut dire (OK: crée)

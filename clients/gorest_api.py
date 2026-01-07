@@ -212,3 +212,9 @@ class GoRestApi:
             raise ValueError(f"wrong status: {r.status_code}")
         except (requests.HTTPError, requests.ConnectionError, ValueError) as e:
             return {"valid": False, "response": {"type": type(e), "msg": e}}
+
+# %%
+
+## autoriser les redirections http ( code 3xx) avec requests
+
+r = requests.get("https://dawan.fr", allow_redirects=True)
