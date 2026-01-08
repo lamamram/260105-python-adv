@@ -25,7 +25,11 @@ class StatusEnum(enum.Enum):
 
 class Base(DeclarativeBase):
   """classe de base pour tous les modèles (tables)"""
-  pass
+  # comportement générique embarqué dans tous les modèles héritant de cette classe
+  display_fields = ()
+
+  def to_dict(self) -> dict:
+    return { f: getattr(self, f) for f in self.display_fields }
 
 class User(Base):
   """
@@ -33,6 +37,8 @@ class User(Base):
   Relation: un User peut avoir un Person (One to One)
   """
   __tablename__ = "users"
+  display_fields = ("id", "username")
+  
 
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   # String => VARCHAR (SQL) pour CHAR (SQL) utiliser CHAR (SQLAlchemy)
@@ -49,8 +55,8 @@ class User(Base):
   def __str__(self):
     return f"User#{self.id}: {self.username}/****"
   
-  def to_dict(self) -> dict:
-    return { f: getattr(self, f) for f in ("id", "username") }
+  # def to_dict(self) -> dict:
+  #   return { f: getattr(self, f) for f in ("id", "username") }
 
 class Person(Base):
 
