@@ -56,7 +56,10 @@ def init_database():
 
     # INSERT INTO persons (...) Values ('', '', ...), ...
     db.add_all(addresses)
+    # j'ai mets en cache toutes les insertions ...
+    db.flush()
 
+    # pour que les derniers selects utilisent le nouvelles données
     print("Bdd initialisée correctement !")
     user_count = db.execute(select(func.count()).select_from(User)).scalar()
     person_count = db.execute(select(func.count()).select_from(Person)).scalar()
