@@ -40,8 +40,9 @@ class User(Base):
   password: Mapped[str] = mapped_column(String(255), nullable=False)
 
   # relations: one to one => ici on travaille sur le python donc pas sur la base de données
+  # uselist=False indique que c'est une relation one-to-one (pas une liste)
   # si user est supprimé je veux conserver la personne
-  person: Mapped["Person"] = relationship(back_populates="user", cascade="save-update")
+  person: Mapped["Person"] = relationship(back_populates="user", cascade="save-update", uselist=False)
 
 
 class Person(Base):
@@ -54,12 +55,14 @@ class Person(Base):
   gender: Mapped[str] = mapped_column(String(20), nullable=True)
   status: Mapped[int] = mapped_column(Enum(StatusEnum))
   # clé étrangère dans la base de données: 
-  # ondelete="SET NULL" si person est supprimé => user_id est mis à NULL
-  user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+  # unique=True garantit qu'un User ne peut avoir qu'une seule Person (one-to-one)
+  # ondelete="SET NULL" si user est supprimé => user_id est mis à NULL
+  user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, unique=True)
   
   # relations
-  # cascade delete, delete-orphan: si une personne est supprimée on suprime le user
-  user: Mapped["User"] = relationship(back_populates="person", cascade="delete, delete-orphan")
+  # cascade="delete" : si Person est supprimée, User est aussi supprimé
+  # Si le User est supprimé, la Person reste (grâce à ondelete="SET NULL")
+  user: Mapped["User"] = relationship(back_populates="person", cascade="save-update, delete")
   # one to many
   addresses: Mapped[List["Address"]] = relationship(back_populates="person", cascade="save-update")
 
@@ -72,7 +75,7 @@ class Address(Base):
   street: Mapped[str] = mapped_column(String(255), nullable=False)
   zipcode: Mapped[str] = mapped_column(String(20), nullable=False)
   city: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-  user_id: Mapped[int] = mapped_column(ForeignKey("persons.id"))
+  person_id: Mapped[int] = mapped_column(ForeignKey("persons.id"))
 
   # relations
   person: Mapped["Person"] = relationship(back_populates="addresses", cascade="save-update")
