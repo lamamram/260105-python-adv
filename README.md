@@ -83,6 +83,8 @@
 
 ### capacités d'un ORM: SqlAlchemy 2+
 
+
+
 1. décrire un modèle de données
 2. en déduire une base de donnée Relationnelle selon une configuration (sqlite3)
 3. exécuter/mettre en cache les lectures/écritures vers/depuis la bdd
