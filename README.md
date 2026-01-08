@@ -66,3 +66,25 @@
   + ajouter la route `/login`
 3. vérification du jeton: `auth.verify_token`
   + un test du token avec la route `/me`
+
+
+## faire persister les données avec une bdd sqlite3 et l'ORM SQLAlchemy
+
+### Objet Relational Mapper
+
+* outil de manipulation de la couche de donnée relationnelle à partir d'interfaces dédiée
+* l'ORM doit réaliser une **inversion de dépendance**
+
+```
+|                        indépendant                        |            remplaçables          
+|------------------------Logique Serveur -------------------|-------DAO----------|---DATA-----
+ FASTAPI -> Route -> Interface (classe abstraite) ASSEZ FIXE -> ORM(SQLAlchemy) -> DB(sqlite3)
+```
+
+### capacités d'un ORM: SqlAlchemy 2+
+
+1. décrire un modèle de données
+2. en déduire une base de donnée Relationnelle selon une configuration (sqlite3)
+3. exécuter/mettre en cache les lectures/écritures vers/depuis la bdd
+4. organiser les migrations de données en utilisant le composant **alembic**
+
