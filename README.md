@@ -90,3 +90,28 @@
 3. exécuter/mettre en cache les lectures/écritures vers/depuis la bdd
 4. organiser les migrations de données en utilisant le composant **alembic**
 
+
+### gestion des couches de données
+
+```python
+
+# un objet python: n'existe pas en cache ni en bdd
+user = User(username="admin", password="secret123")
+
+# çà nous créé la requête d'insertion mais l'enregistrement n'est pas mis en cache ni en bdd
+db.add(user)
+
+# mise en cache => d'autres requêtes peuvent lire la table à partir du cache, dans la session courante
+db.flush()
+
+# mise en bdd => for REAL
+db.commit()
+
+user.username = "Admin"
+db.refresh(user) # "admin" => on restaure l'état du cache après le dernier flush
+
+# parallèlement, on pourrait enlever explicitement les modifications non flushées
+db.expire(user) # "admin" aussi
+
+```
+

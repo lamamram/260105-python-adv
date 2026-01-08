@@ -43,7 +43,11 @@ class User(Base):
   # uselist=False indique que c'est une relation one-to-one (pas une liste)
   # si user est supprimé je veux conserver la personne
   person: Mapped["Person"] = relationship(back_populates="user", cascade="save-update", uselist=False)
-
+  
+  # méthode magique qui rend l'objet convertible en chaine caractère 
+  # => str(user) et donc print(user) car print utilise str
+  def __str__(self):
+    return f"User#{self.id}: {self.username}/****"
 
 class Person(Base):
 
