@@ -133,6 +133,36 @@ random.shuffle(rows)
 sorted(rows, key=lambda r: int(r[4:]))
 
 # %%
+# notion de générateurs en python
 
+# différence entre itérateur, fonction, générateur
+
+lst = list(range(5))
+
+# un itérateur est un objet qui implémente les 3 méthodes magiques: __init__, __iter__, __next__
+# for i in lst: print(i)
+
+def my_func(param):
+  return param
+
+# une fonction par défaut n'est pas itérable
+# for p in my_func(1): print(p)
+
+def my_gen(param):
+  yield param
+  yield param + 2
+
+# générateur est un itérateur
+# c'est une "fonction" qui exécute ses instruction
+# avec certaines instruction yield qui vont retourne une valeur
+# dans une boucle for ou dans la fonction next()
+for p in my_gen(1): print(p)
+
+# appeler une fonction génératrice retourne le générateur
+gn = my_gen(5)
+
+print(next(gn))
+# après une itération, le générateur mémorise sont état
+print(next(gn))
 
 # %%

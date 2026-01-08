@@ -5,6 +5,8 @@ module de création du moteur de connexion sqlite3 et des sessions sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
+
+from typing import Generator
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "persons.db"
@@ -25,3 +27,18 @@ engine = create_engine(
 # flush: de mettre l'état des modèles de la session dans un cache mémoire qui peut être commit
 # intérêt du flush: le cache est plus rapide mais volatile
 SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
+
+#            ce qui est   yielded  sent  returned
+def get_db() -> Generator[Session, None, None]:
+  """
+  retourne une session SessionLocal()
+  en tant que Générateur 
+  car ici la session sera fermée grâce au finaly qui subsiste 
+  quand la portée de la route fastAPI sera terminée
+  car un générateur (!= function) mémorise son contexte
+  """
+  db = SessionLocal()
+  try:
+    yield db
+  finally:
+    db.close()

@@ -48,6 +48,9 @@ class User(Base):
   # => str(user) et donc print(user) car print utilise str
   def __str__(self):
     return f"User#{self.id}: {self.username}/****"
+  
+  def to_dict(self) -> dict:
+    return { f: getattr(self, f) for f in ("id", "username") }
 
 class Person(Base):
 

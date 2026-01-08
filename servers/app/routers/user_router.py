@@ -5,6 +5,10 @@ par défaut écrivez les routes dans l'ordre des plus singuliers vers les plus g
 """
 from fastapi import APIRouter, Query, HTTPException, status, Request, Depends
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from ..orm.database import get_db
+from ..orm.models import User as UserModel
 
 # type de donées avec un objet de type donné OU None
 from typing import Optional
@@ -91,13 +95,17 @@ USERS = [
 ]
 
 @user_router.get("/home", status_code=200)
-def home(request: Request) -> str:
+def home(request: Request, db: Session=Depends(get_db)) -> str:
+  # select * from users LIMIT 2
+  stmt = select(UserModel).limit(2)
+  users = db.execute(stmt).scalars().all()
+  users_data = list(map(lambda u: u.to_dict(), users))
   # changer la réponse de base avec ici injection de templates jinja2
   return TEMPLATES.TemplateResponse(
     "index.html",
     {
       "request": request,
-      "users": USERS[:3]
+      "users": users_data
     }
 )
 

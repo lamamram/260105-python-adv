@@ -9,7 +9,7 @@ from .middlewares import RedirectSlashMiddleware
 from .routers import *
 
 # debug = True => affiche les prints dans le terminal
-app = FastAPI(title="User API", debug=True)
+app = FastAPI(title="Person API", debug=True)
 
 # Ajouter le middleware AVANT d'inclure les routers
 app.add_middleware(RedirectSlashMiddleware)
