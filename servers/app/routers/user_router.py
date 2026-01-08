@@ -21,79 +21,6 @@ user_router = APIRouter(prefix="/users")
 BASE_PATH = Path(__file__).resolve().parent.parent
 TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
-USERS = [
-    {
-        "id": 8115171,
-        "name": "Damodara Naik DO",
-        "email": "damodara_naik_do@schaden.example",
-        "gender": "male",
-        "status": "inactive"
-    },
-    {
-        "id": 8115170,
-        "name": "Anandamayi Achari",
-        "email": "achari_anandamayi@stracke-rowe.test",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115169,
-        "name": "Sanka Namboothiri MD",
-        "email": "namboothiri_sanka_md@grady-graham.test",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115168,
-        "name": "Prof. Bilwa Chopra",
-        "email": "prof_chopra_bilwa@greenfelder.example",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115163,
-        "name": "Mr. Deevakar Guneta",
-        "email": "deevakar_guneta_mr@jaskolski.example",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115161,
-        "name": "Amrita Kapoor",
-        "email": "kapoor_amrita@roob.test",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115160,
-        "name": "Tushar Deshpande",
-        "email": "tushar_deshpande@braun-schuster.example",
-        "gender": "male",
-        "status": "inactive"
-    },
-    {
-        "id": 8115159,
-        "name": "Vishnu Saini",
-        "email": "vishnu_saini@hansen.test",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115158,
-        "name": "Ekadant Khatri",
-        "email": "ekadant_khatri@hagenes.test",
-        "gender": "female",
-        "status": "active"
-    },
-    {
-        "id": 8115155,
-        "name": "Mr. Mangala Achari",
-        "email": "mr_mangala_achari@stracke.test",
-        "gender": "female",
-        "status": "active"
-    }
-]
-
 @user_router.get("/home", status_code=200)
 def home(request: Request, db: Session=Depends(get_db)) -> str:
   # select * from users LIMIT 2
@@ -117,42 +44,50 @@ def search_users(*,
           "value": "matt"
         }
       }),
-      max_results: Optional[int]=10) -> dict:
+      max_results: Optional[int]=10,
+      db: Session=Depends(get_db)) -> dict:
   """
   utilisation de la querystring
   utilisation des méta types optional qui autorise la valeur None
   """
+  stmt = select(UserModel)
   if not keyword:
-    return {"results": USERS[:max_results]}
-  results = filter(lambda user: keyword.lower() in user["name"].lower(), USERS)
-  return {"results": list(results)[:max_results]}
+    return {"results": db.execute(stmt.limit(max_results))}
+  # SELECT * FROM users Where username LIKE '%keyword%' LIMIT max_results
+  users = db.execute(
+              select(UserModel).
+              where(UserModel.username.like(f"%{keyword}%")).
+              limit(max_results)
+            ).scalars().all()
+  users = list(map(lambda u: u.to_dict(), users)) if users else []
+  return {"results": users}
 
 @user_router.get("/{user_id}", status_code=200, response_model=User)
-def fetch_user(*, user_id: int) -> dict:
+def fetch_user(*, user_id: int, db: Session=Depends(get_db)) -> dict:
   """
   ajout d'un paramètre d'url
   """
-  result = [user for user in USERS if user["id"] == user_id]
-  if not result:
+  user = db.execute(select(UserModel).where(UserModel.id == user_id)).scalar()
+  if not user:
     raise HTTPException(
       status_code=status.HTTP_404_NOT_FOUND,
       detail="Utilisateur non trouvé"
     )
-  return result[0]
+  return user.to_dict()
 
 ### call post pour créer un utilisateur ( pas de persitance )
 ### déterminer le schéma d'entrée et de sortie et le status code qui veut dire (OK: crée)
 # TODO: ajouter l'authentification sur cette route
-@user_router.post("/create", status_code=201, response_model=User)
-def create_user(*, new_user: PostUser, auth_user: dict=Depends(verify_token)) -> dict:
-  new_id = max(USERS, key=lambda obj: obj["id"])['id'] + 1
-  user_in = User(
-    id=new_id,
-    name=new_user.name,
-    email=new_user.email,
-    gender=new_user.gender,
-    status=new_user.status
-  )
-  # en mémoire donc volatile
-  USERS.append(dict(user_in))
-  return user_in
+# @user_router.post("/create", status_code=201, response_model=User)
+# def create_user(*, new_user: PostUser, auth_user: dict=Depends(verify_token)) -> dict:
+#   new_id = max(USERS, key=lambda obj: obj["id"])['id'] + 1
+#   user_in = User(
+#     id=new_id,
+#     name=new_user.name,
+#     email=new_user.email,
+#     gender=new_user.gender,
+#     status=new_user.status
+#   )
+#   # en mémoire donc volatile
+#   USERS.append(dict(user_in))
+#   return user_in

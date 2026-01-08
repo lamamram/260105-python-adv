@@ -16,7 +16,7 @@ from typing import List
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # classes principales pour décrire des champs de données (colonnes)
-from sqlalchemy import String, Enum, Integer, Float, Text, ForeignKey, ForeignKeyConstraint
+from sqlalchemy import String, Enum, Integer, Float, Text, ForeignKey
 
 
 class StatusEnum(enum.Enum):
