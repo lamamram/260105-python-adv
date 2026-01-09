@@ -10,6 +10,7 @@ from sqlalchemy import select, func
 def init_database():
   print("Création des tables...")
   # Créer les tables liées aux modèles héritant de Base
+  # CREATE TABLE IF NOT EXISTS
   Base.metadata.create_all(bind=engine)
 
   # tests
@@ -41,6 +42,7 @@ def init_database():
 
     print("Insertion des personnes...")
     persons = [
+      # REM: on aurait pu utiliser user_id=users[0].id à la place de user=users[0] mais les objets sont "lazy_loaded" 
       Person(name="matt LAMAM", email="matt@example.com", gender="male", status=StatusEnum.active, user=users[0]),
       Person(name="gars", email="gars@example.com", gender="male", status=StatusEnum.inactive, user=users[1])
     ]

@@ -50,15 +50,11 @@ def search_users(*,
   utilisation de la querystring
   utilisation des méta types optional qui autorise la valeur None
   """
-  stmt = select(UserModel)
-  if not keyword:
-    return {"results": db.execute(stmt.limit(max_results))}
   # SELECT * FROM users Where username LIKE '%keyword%' LIMIT max_results
-  users = db.execute(
-              select(UserModel).
-              where(UserModel.username.like(f"%{keyword}%")).
-              limit(max_results)
-            ).scalars().all()
+  stmt = select(UserModel)
+  stmt = stmt if not keyword else stmt.where(UserModel.username.like(f"%{keyword}%"))
+  stmt = stmt.limit(max_results)
+  users = db.execute(stmt).scalars().all()
   users = list(map(lambda u: u.to_dict(), users)) if users else []
   return {"results": users}
 

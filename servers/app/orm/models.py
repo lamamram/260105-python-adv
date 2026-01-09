@@ -13,6 +13,8 @@ import bcrypt
 from typing import List
 
 # classes principales pour générer un modèle de données
+# Declarative => une façon de structurer les modèle pour déterminer un état défini
+# déclaratif (état / participe passé) != impératif (transition / infinitif)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # classes principales pour décrire des champs de données (colonnes)

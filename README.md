@@ -70,7 +70,7 @@
 
 ## faire persister les données avec une bdd sqlite3 et l'ORM SQLAlchemy
 
-### Objet Relational Mapper
+### Object Relational Mapper
 
 * outil de manipulation de la couche de donnée relationnelle à partir d'interfaces dédiée
 * l'ORM doit réaliser une **inversion de dépendance**
@@ -85,7 +85,7 @@
 
 
 
-1. décrire un modèle de données
+1. décrire un modèle de données avec leurs relations
 2. en déduire une base de donnée Relationnelle selon une configuration (sqlite3)
 3. exécuter/mettre en cache les lectures/écritures vers/depuis la bdd
 4. organiser les migrations de données en utilisant le composant **alembic**
