@@ -32,14 +32,18 @@ def init_database():
       return
     
     print("Insertion des utilisateurs...")
+    # ICI je détermine moi même les valeurs de clé primaire (avec un compteur)
+    # => SQLAlchemy génère un INSERT avec 2 tuples de données 
     users = [
-      User(username="admin", password="secret123"),
-      User(username="user", password="password456")
+      User(id=1, username="admin", password="secret123"),
+      User(id=2, username="user", password="password456")
     ]
 
-    # INSERT INTO users (username, password) Values ('', ''), ...
+    # INSERT INTO users (username, password) Values ('', ''), ('', '')
     db.add_all(users)
 
+    # ICI je ne donne pas la clé primaire (AUTOICREMENT)
+    # => SQLAlchemy génère 2 INSERTS avec 1 tuple de donnée à chque fois
     print("Insertion des personnes...")
     persons = [
       # REM: on aurait pu utiliser user_id=users[0].id à la place de user=users[0] mais les objets sont "lazy_loaded" 
@@ -47,7 +51,9 @@ def init_database():
       Person(name="gars", email="gars@example.com", gender="male", status=StatusEnum.inactive, user=users[1])
     ]
 
-    # INSERT INTO persons (...) Values ('', '', ...), ...
+    # INSERT INTO persons (...) Values ('', '', ...)
+    # INSERT INTO persons (...) Values ('', '', ...)
+    # on aussi db.bulk_save_objets => LOAD DATA INFILE en sql (+ rapide , - secure)
     db.add_all(persons)
 
     print("Insertion des adresses...")
