@@ -115,3 +115,42 @@ db.expire(user) # "admin" aussi
 
 ```
 
+## migrations de données avec Alembic
+
+### stratégie
+
+1. install: `pip install alembic`
+2. initialiser: `alembic init alembic` **alembic/** et **alembic.ini** dans orm/
+3. charger les modèles dans **alembic/env.py**: 
+  + `from model import Base`
+  + `target_metadata = Base.metadata`
+  + dans `context.configure`: `render_as_batch: True` => SQLITE
+4. déterminer le delta entre python <=> bdd: génère migration dans **alembic/versions/**
+  + `alembic revision --autogenerate -m "preciser les modifs"`
+5. exécuter la migration: `alembic upgrade head`
+
+### autre types de migrations
+
+```bash
+# Aller à une version spécifique (ID de révision)
+alembic upgrade 11a65d7cf638
+
+# Avancer d'un certain nombre de migrations (+1, +2, etc.)
+alembic upgrade +1
+
+# Revenir en arrière d'une migration
+alembic downgrade -1
+
+# Revenir à une version spécifique
+alembic downgrade 11a65d7cf638
+
+# Revenir au début (supprimer toutes les migrations)
+alembic downgrade base
+
+# Voir la version actuelle
+alembic current
+
+# Voir l'historique des migrations
+alembic history
+```
+
