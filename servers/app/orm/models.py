@@ -93,7 +93,7 @@ class Person(Base):
   # => lazy loading => les données quand person.addresses est demandé
   # => lazy="joined" => eager loading :données immédiatement chargée avec une jointure SQL
   # => lazy="immediate" => idem mais avec 2 SELECT et un mapping
-  # => lazy="selectin" => idem mais avec 2 SELECT imbriqués : SELECT * FROM xxxx join zzzz as [...] where yyyy in (SELECT * FROM zzzz) 
+  # => lazy="selectin" => idem mais avec 2 SELECT imbriqués : SELECT * FROM xxxx  where yyyy in (SELECT * FROM zzzz) 
   addresses: Mapped[List["Address"]] = relationship(back_populates="person", cascade="save-update")
 
 

@@ -115,6 +115,118 @@ db.expire(user) # "admin" aussi
 
 ```
 
+### scenarios de chargements de données en cas de relation ou jointure
+
+1. relationship(... `lazy="select"`)
+  + **Lazy loading** par défaut
+  + a besoin d'une session
+  + économise la mémoire Mais bcp de requêtes
+
+```python
+class Person(Base):
+    __tablename__ = "persons"
+    addresses: Mapped[List["Address"]] = relationship(
+        back_populates="person",
+        lazy="select"  # Par défaut
+    )
+
+# Charger une personne
+person = db.execute(select(Person).where(Person.id == 1)).scalar()
+# SQL: SELECT * FROM persons WHERE id = 1
+
+# Premier accès à person.addresses => déclenche une nouvelle requête
+addresses = person.addresses
+# SQL: SELECT * FROM addresses WHERE person_id = 1
+```
+
+2. `lazy="joined"`
+  + **Eager Loading**
+  + sans session
+  + une seule requête Mais bcp de données (voire inutiles)
+  + possibles jointures complexes => lent
+
+```python
+# Charger une personne
+person = db.execute(select(Person).where(Person.id == 1)).scalar()
+# Les addresses sont DÉJÀ chargées en une seule requête
+addresses = person.addresses  # Pas de requête SQL supplémentaire
+
+# UNE SEULE requête avec LEFT OUTER JOIN
+# SELECT persons.*, addresses.*
+# FROM persons 
+# LEFT OUTER JOIN addresses ON persons.id = addresses.person_id
+# WHERE persons.id = 1;
+```
+
+3. `lazy="selectin"`
+  + **Eager Loading** avec l'operateur **IN SQL**
+  + et plus performant pour charger plusieurs objets
+  + plus simple que Join
+  + uniquement 2 requêtes pour une collection de données
+
+```python
+# Charger plusieurs personnes
+persons = db.execute(select(Person).limit(3)).scalars().all()
+# Les addresses sont chargées avec un SELECT IN
+
+# -- Requête 1: Charger les personnes
+# SELECT * FROM persons LIMIT 3;
+# -- Résultat: persons avec id = 1, 2, 3
+
+# -- Requête 2: Charger TOUTES les adresses en une fois
+# SELECT * FROM addresses 
+# WHERE addresses.person_id IN (1, 2, 3);
+```
+
+4. `lazy="immediate"`
+  + **Eager Loading** avec deux requêtes pour chaque élément
+  + plus simple que join Mais trop de requêtes pour une collection
+
+```python
+# Charger une personne (pas pour plusieurs !!!)
+person = db.execute(select(Person).where(Person.id == 1)).scalar()
+# Les addresses sont automatiquement chargées
+
+# -- Requête 1: Charger la personne
+# SELECT * FROM persons WHERE id = 1;
+
+# -- Requête 2: Charger ses adresses (automatiquement, immédiatement après)
+# SELECT * FROM addresses WHERE person_id = 1;
+```
+
+<ins>5. Recommandations</ins>
+
+|Situation|lazy recommandé|Raison|
+|---------|---------------|------|
+|Relations rarement utilisées|select|Économise ressources|
+|Toujours besoin des relations|joined|Une seule requête|
+|Charger liste d'objets|selectin|Évite N+1, performant|
+|Petites collections simples|joined|Simple et efficace|
+|Relations complexes/volumineuses|select + explicite|Contrôle manuel|
+
+<ins>6. jointures explicites - contrôle manuel</ins>
+
+```python
+from sqlalchemy.orm import joinedload, selectinload
+
+# Forcer joined pour cette requête uniquement
+persons = db.execute(
+    select(Person)
+    .options(joinedload(Person.addresses))
+    .limit(3)
+).scalars().all()
+
+# Ou avec selectin
+persons = db.execute(
+    select(Person)
+    .options(selectinload(Person.addresses))
+    .limit(3)
+).scalars().all()
+```
+
+
+
+
 ## migrations de données avec Alembic
 
 ### stratégie
