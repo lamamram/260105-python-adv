@@ -8,3 +8,7 @@ class User(BaseModel):
 
 class UserSearchResults(BaseModel):
   results: Sequence[User]
+
+class RegisterUser(BaseModel):
+  username: str = Field(max_length=100)
+  password: str = Field(max_length=100)

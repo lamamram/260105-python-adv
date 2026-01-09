@@ -20,4 +20,6 @@ def root() -> dict:
   return {"msg": "Hello World"}
 
 app.include_router(user_router)
+app.include_router(person_router)
 app.include_router(auth_router)
+

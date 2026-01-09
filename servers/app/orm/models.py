@@ -63,6 +63,7 @@ class User(Base):
 class Person(Base):
 
   __tablename__ = "persons"
+  display_fields = ("id", "name", "email", "gender", "status", "addresses")
 
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -79,6 +80,11 @@ class Person(Base):
   # Si le User est supprimé, la Person reste (grâce à ondelete="SET NULL")
   user: Mapped["User"] = relationship(back_populates="person", cascade="save-update, delete")
   # one to many
+  # par défaut la relationship contient le paramètre lazy="select" 
+  # => lazy loading => les données quand person.addresses est demandé
+  # => lazy="joined" => eager loading :données immédiatement chargée avec une jointure SQL
+  # => lazy="immediate" => idem mais avec 2 SELECT et un mapping
+  # => lazy="selectin" => idem mais avec 2 SELECT imbriqués : SELECT * FROM xxxx join zzzz as [...] where yyyy in (SELECT * FROM zzzz) 
   addresses: Mapped[List["Address"]] = relationship(back_populates="person", cascade="save-update")
 
 
