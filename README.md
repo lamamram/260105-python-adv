@@ -348,4 +348,28 @@ async def fetch_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
 8. `db.delete(user)` -> `await db.delete(user)`
 
 
+## TESTS d'intégrations avec Mocks
+
+### stratégie
+
+1. install: `pip install pytest pytest-cov httpx`
+2. placer un package **tests/** et un fichier **pytest.ini** dans **app/**
+3. créer fichier de config **tests/conftest.py** qui contient
+  + des fixtures: ressources nécessaires aux tests
+  + autres options
+
+4. écrire les fixtures en utilisant des Mocks
+  + classe qui imite le comportement d'un autre objet nécessaire au test
+  + mais lent et non constitutif de ce qu'on veut tester
+  + TestClient: objet qui simule une requête http (hors déploiement)
+  + Mock normal: c'est à nous de donner le comportement complet à imiter
+  + MagickMock: BEAUCOUP de comportements déjà cablés !!
+
+5. écrire des tests en utilisant des fixtures et des Mocks
+
+6. lancer les tests
+  + `pytest -v [-s]` dans app/
+  + `-s`: affiche les prints
+
+
 
