@@ -9,6 +9,7 @@ Approche déclarative => représente un état
 # pip install bcrypt
 import enum
 import bcrypt
+from datetime import datetime, timezone
 
 from typing import List
 
@@ -18,7 +19,7 @@ from typing import List
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # classes principales pour décrire des champs de données (colonnes)
-from sqlalchemy import String, Enum, Integer, Float, Text, ForeignKey
+from sqlalchemy import String, Enum, Integer, Float, DateTime, Text, ForeignKey, func
 
 
 class StatusEnum(enum.Enum):
@@ -31,6 +32,7 @@ class Base(DeclarativeBase):
   display_fields = ()
 
   def to_dict(self) -> dict:
+    # TODO pour les champs date: self.[date].isoformat() or None
     return { f: getattr(self, f) for f in self.display_fields }
 
 class User(Base):
@@ -70,6 +72,13 @@ class Person(Base):
   email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
   gender: Mapped[str] = mapped_column(String(20), nullable=True)
   status: Mapped[int] = mapped_column(Enum(StatusEnum))
+  # nouveau champs: ALTER TABLE ...
+  created_at: Mapped[datetime] = mapped_column(
+    DateTime(timezone=True), 
+    nullable=False,
+    server_default=func.now()  # Valeur par défaut côté serveur
+  )
+
   # clé étrangère dans la base de données: 
   # unique=True garantit qu'un User ne peut avoir qu'une seule Person (one-to-one)
   # ondelete="SET NULL" si user est supprimé => user_id est mis à NULL
