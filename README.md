@@ -266,3 +266,86 @@ alembic current
 alembic history
 ```
 
+## utiliser FastAPI en asynchrone
+
+### pourquoi le faire ?
+
+* fastapi gère des requêtes exécutées dans des threads.
+si une requête effectue des opérations d'entrée/sortie (i/o) bloquantes, ex: appels à une base de données
+
+* en utilisant les outils asynchrones et leurs coroutines, les opérations i/o peuvent être effectuées de manière non bloquante,
+permettant à fastapi de gérer plus de requêtes en parallèle dans le même thread.
+
+* Une coroutine python est une fonction définie avec **async def** qui, lorsqu'elle est exécutée par une **boucle d'événement**, peut se suspendre (avec **await**) pour céder le contrôle, puis être reprise plus tard.
+
+### stratégie avec sqlalchemy + sqlite
+
+1. installer les outils : `pip install aiosqlite`
+
+2. `database.py`
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+# ...
+DB_URI = "sqlite+aiosqlite:///persons.db"
+# ...
+async_engine = create_async_engine(
+    DB_URI,
+    echo=True
+)
+# ...
+AsyncSessionLocal = async_sessionmaker(autoflush=False, autocommit=False,class_=AsyncSession, bind=async_engine)
+# ...
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
+    # asyn with remplace try / finally car la session est terminée en sortant du contexte
+    async with AsyncSessionLocal() as session:
+        yield session
+```
+
+3. `init_db.py`
+
+```python
+import asyncio
+from models import Base
+from database import async_engine
+
+async def init_db():
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+# ...
+if __name__ == "__main__":
+    asyncio.run(init_db())
+```
+
+4. `models.py`
+
+> RIEN car les modèles SQLALCHEMY 2+ sont nativement asynchrones !
+
+5. `router.py`
+
+```python
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..orm.database import get_async_db
+
+@user_router.get("/{user_id}")
+async def fetch_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    result = await db.execute(select(UserModel).where(UserModel.id == user_id))
+    user = result.scalar()
+    if not user:
+        raise HTTPException(status_code=404)
+    return user.to_dict()
+```
+
+<ins>6. changements clés</ins>
+
+1. `def` -> `async def`
+2. `Session` -> `AsyncSession`
+3. `get_db` -> `get_async_db`
+4. `db.execute()` -> `await db.execute()`
+5. `db.commit()` -> `await db.commit()`
+6. `db.add()` -> reste identique (pas async)
+7. `db.refresh()` -> `await db.refresh()`
+8. `db.delete(user)` -> `await db.delete(user)`
+
+
+
